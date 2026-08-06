@@ -12,19 +12,19 @@ abstract class Usuario{
         $this ->rol = $rol;
     }
 
-    public function getId(){
+    public function getId(): int{
         return $this->id;
     }
 
-    public function getNombre(){
+    public function getNombre(): string{
         return $this->nombre;
     }
 
-    public function getEmail(){
+    public function getEmail(): string{
         return $this->email;
     }
 
-    public function getrol(){
+    public function getrol(): string{
         return $this->rol;
     }
 
