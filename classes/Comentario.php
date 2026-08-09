@@ -1,21 +1,18 @@
 <?php
 require_once __DIR__ . '/Conexion.php';
+require_once __DIR__ . '/Usuario.php';
 
 class Comentario
 {
     private ?int $id;
     private int $usuarioId;
     private string $contenido;
-    private bool $editado;
-    private bool $fijado;
 
-    public function __construct(?int $id, int $usuarioId, string $contenido, bool $editado = false, bool $fijado = false)
+    public function __construct(?int $id, int $usuarioId, string $contenido)
     {
         $this->id        = $id;
         $this->usuarioId = $usuarioId;
         $this->contenido = $contenido;
-        $this->editado   = $editado;
-        $this->fijado    = $fijado;
     }
 
     public function getId(): ?int { return $this->id; }
@@ -26,7 +23,7 @@ class Comentario
     {
         try {
             $pdo = Conexion::getInstancia();
-            $stmt = $pdo->prepare('INSERT INTO comentarios (usuario_id, contenido) VALUES (:usuario_id, :contenido)');
+            $stmt = $pdo->prepare('INSERT INTO comentarios (usuarioId, conteudo) VALUES (:usuario_id, :contenido)');
             $ok = $stmt->execute([
                 ':usuario_id' => $this->usuarioId,
                 ':contenido'  => $this->contenido,
@@ -45,11 +42,16 @@ class Comentario
     {
         try {
             $pdo = Conexion::getInstancia();
-            $sql = 'SELECT c.*, u.nombre AS autor_nombre, u.rol AS autor_rol
+            $sql = 'SELECT c.idComentario AS id, c.usuarioId AS usuario_id, c.conteudo AS contenido,
+                           c.datacomentario AS fecha, u.nome AS autor_nombre, u.tipoDeUsuario AS autor_rol
                     FROM comentarios c
-                    JOIN usuarios u ON u.id = c.usuario_id
-                    ORDER BY c.fijado DESC, c.fecha DESC';
-            return $pdo->query($sql)->fetchAll();
+                    JOIN usuarios u ON u.idUsuario = c.usuarioId
+                    ORDER BY c.datacomentario DESC';
+            $filas = $pdo->query($sql)->fetchAll();
+            foreach ($filas as &$fila) {
+                $fila['autor_rol'] = Usuario::rolDesdeBd($fila['autor_rol']);
+            }
+            return $filas;
         } catch (PDOException $e) {
             error_log('Error al listar comentarios: ' . $e->getMessage());
             return [];
@@ -60,7 +62,9 @@ class Comentario
     {
         try {
             $pdo = Conexion::getInstancia();
-            $stmt = $pdo->prepare('SELECT * FROM comentarios WHERE id = :id');
+            $stmt = $pdo->prepare('SELECT idComentario AS id, usuarioId AS usuario_id, conteudo AS contenido,
+                                           datacomentario AS fecha
+                                    FROM comentarios WHERE idComentario = :id');
             $stmt->execute([':id' => $id]);
             $fila = $stmt->fetch();
             return $fila ?: null;
@@ -77,7 +81,7 @@ class Comentario
         }
         try {
             $pdo = Conexion::getInstancia();
-            $stmt = $pdo->prepare('UPDATE comentarios SET contenido = :contenido, editado = 1 WHERE id = :id');
+            $stmt = $pdo->prepare('UPDATE comentarios SET conteudo = :contenido WHERE idComentario = :id');
             return $stmt->execute([
                 ':contenido' => $this->contenido,
                 ':id'        => $this->id,
@@ -88,23 +92,11 @@ class Comentario
         }
     }
 
-    public static function alternarFijado(int $id): bool
-    {
-        try {
-            $pdo = Conexion::getInstancia();
-            $stmt = $pdo->prepare('UPDATE comentarios SET fijado = NOT fijado WHERE id = :id');
-            return $stmt->execute([':id' => $id]);
-        } catch (PDOException $e) {
-            error_log('Error al fijar comentario: ' . $e->getMessage());
-            return false;
-        }
-    }
-
     public static function eliminar(int $id): bool
     {
         try {
             $pdo = Conexion::getInstancia();
-            $stmt = $pdo->prepare('DELETE FROM comentarios WHERE id = :id');
+            $stmt = $pdo->prepare('DELETE FROM comentarios WHERE idComentario = :id');
             return $stmt->execute([':id' => $id]);
         } catch (PDOException $e) {
             error_log('Error al eliminar comentario: ' . $e->getMessage());
@@ -112,5 +104,3 @@ class Comentario
         }
     }
 }
-
-?>

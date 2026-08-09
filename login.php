@@ -19,17 +19,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Completá email y contraseña.';
     } else {
         try {
-            $pdo = Conexao::getInstancia();
-            $stmt = $pdo->prepare('SELECT * FROM usuarios WHERE email = :email');
+            $pdo = Conexion::getInstancia();
+            $stmt = $pdo->prepare('SELECT idUsuario AS id, nome AS nombre, email, senha, tipoDeUsuario
+                                    FROM usuarios WHERE email = :email');
             $stmt->execute([':email' => $email]);
             $fila = $stmt->fetch();
 
-            if ($fila && password_verify($password, $fila['password_hash'])) {
+            if ($fila && $password === $fila['senha']) {
                 $_SESSION['usuario'] = [
                     'id'     => $fila['id'],
                     'nombre' => $fila['nombre'],
                     'email'  => $fila['email'],
-                    'rol'    => $fila['rol'],
+                    'rol'    => Usuario::rolDesdeBd($fila['tipoDeUsuario']),
                 ];
                 header('Location: index.php');
                 exit;

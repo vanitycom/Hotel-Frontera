@@ -10,7 +10,7 @@ require __DIR__ . '/includes/header.php';
 ?>
 
 <section class="hero">
-    <h1>Bienvenido al Hotel Bellavista</h1>
+    <h1>Bienvenido al Hotel Frontera</h1>
     <p>Un espacio pensado para el descanso y la comunidad. Piscina climatizada, spa, gimnasio,
        restaurante con vista al jardín y salones de eventos, todo en un mismo lugar.</p>
     <?php if (usuarioLogueado() === null): ?>

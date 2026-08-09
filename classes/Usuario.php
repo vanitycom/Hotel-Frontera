@@ -24,7 +24,7 @@ abstract class Usuario{
         return $this->email;
     }
 
-    public function getrol(): string{
+    public function getRol(): string{
         return $this->rol;
     }
 
@@ -41,6 +41,27 @@ abstract class Usuario{
             'dueno'       => new Dueno((int) $fila['id'], $fila['nombre'], $fila['email']),
             'funcionario' => new Funcionario((int) $fila['id'], $fila['nombre'], $fila['email']),
             default       => new Huesped((int) $fila['id'], $fila['nombre'], $fila['email']),
+        };
+    }
+
+    /* La columna tipoDeUsuario del banco (banco.sql) guarda los valores en portugués
+       y con tildes ('hóspede', 'funcionário', 'dono'). Estos dos métodos traducen entre
+       eso y el rol interno en español que usa el resto del código. */
+    public static function rolDesdeBd(string $tipoDeUsuario): string
+    {
+        return match ($tipoDeUsuario) {
+            'dono'         => 'dueno',
+            'funcionário'  => 'funcionario',
+            default        => 'huesped',
+        };
+    }
+
+    public static function rolParaBd(string $rol): string
+    {
+        return match ($rol) {
+            'dueno'       => 'dono',
+            'funcionario' => 'funcionário',
+            default       => 'hóspede',
         };
     }
 }

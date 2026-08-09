@@ -13,11 +13,12 @@ if (usuarioLogueado() !== null) {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nombre = trim($_POST['nombre'] ?? '');
+    $telefono = trim($_POST['telefono'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
     $passwordConfirm = $_POST['password_confirm'] ?? '';
 
-    if ($nombre === '' || $email === '' || $password === '') {
+    if ($nombre === '' || $telefono === '' || $email === '' || $password === '') {
         $error = 'Completá todos los campos.';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'El email no es válido.';
@@ -27,18 +28,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Las contraseñas no coinciden.';
     } else {
         try {
-            $pdo = Conexao::getInstancia();
+            $pdo = Conexion::getInstancia();
 
-            $stmt = $pdo->prepare('SELECT id FROM usuarios WHERE email = :email');
+            $stmt = $pdo->prepare('SELECT idUsuario FROM usuarios WHERE email = :email');
             $stmt->execute([':email' => $email]);
             if ($stmt->fetch()) {
                 $error = 'Ya existe una cuenta con ese email.';
             } else {
-                $hash = password_hash($password, PASSWORD_DEFAULT);
                 $stmt = $pdo->prepare(
-                    'INSERT INTO usuarios (nombre, email, password_hash, rol) VALUES (:nombre, :email, :hash, "huesped")'
+                    'INSERT INTO usuarios (nome, telefone, email, senha, tipoDeUsuario) VALUES (:nombre, :telefono, :email, :senha, "hóspede")'
                 );
-                $stmt->execute([':nombre' => $nombre, ':email' => $email, ':hash' => $hash]);
+                $stmt->execute([
+                    ':nombre'   => $nombre,
+                    ':telefono' => $telefono,
+                    ':email'    => $email,
+                    ':senha'    => $password,
+                ]);
 
                 header('Location: login.php');
                 exit;
@@ -63,6 +68,9 @@ require __DIR__ . '/includes/header.php';
     <form method="post" class="formulario">
         <label for="nombre">Nombre</label>
         <input type="text" id="nombre" name="nombre" required value="<?= htmlspecialchars($_POST['nombre'] ?? '') ?>">
+
+        <label for="telefono">Teléfono</label>
+        <input type="tel" id="telefono" name="telefono" required value="<?= htmlspecialchars($_POST['telefono'] ?? '') ?>">
 
         <label for="email">Email</label>
         <input type="email" id="email" name="email" required value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">
