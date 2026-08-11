@@ -5,7 +5,7 @@ class Conexion{
     private const HOST   = 'localhost';
     private const DBNAME = 'BDhotelfronteira';
     private const USER   = 'root';
-    private const PASS   = 'LeonSkennedytupapichulo69';
+    private const PASS   = '';
 
         private function __construct(){
     }
