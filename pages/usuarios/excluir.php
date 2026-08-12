@@ -14,7 +14,7 @@ $id = (int) ($_POST['id'] ?? 0);
 if ($id > 0 && $id !== $usuarioActual->getId()){
     try{
         $pdo = Conexion::getInstancia();
-        $stmt = $pdo->prepare('DELETE FROM Usuarios WHERE idUsuario = :id');
+        $stmt = $pdo->prepare('DELETE FROM usuarios WHERE idUsuario = :id');
         $stmt->execute([':id' => $id]);
     } catch (PDOException $e){
         error_log('Erro ao excluir um usuário: ' . $e->getMessage());

@@ -40,8 +40,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             //Aqui ele traduz o ''rol'' escolhido pelo formato que o MySQL aceita no 'enum'
             $tipoDeUsuarioBd = Usuario::rolParaBd($rol);
 
-            $stmt = $pdo->prepare('UPDATE usuarios SET nombre = :nombre, rol = :rol WHERE id = :id');
-            $stmt->execute([':nombre' => $nombre, ':tipo' => $tipoDeUsuarioBd, ':id' => $id]);
+            $stmt = $pdo->prepare('UPDATE usuarios SET nome = :nombre, tipoDeUsuario = :rol WHERE idUsuario = :id');
+            $stmt->execute([':nombre' => $nombre, ':rol' => $tipoDeUsuarioBd, ':id' => $id]);
             header('Location: listar.php');
             exit;
         } catch (PDOException $e) {

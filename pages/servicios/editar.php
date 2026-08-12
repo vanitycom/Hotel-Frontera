@@ -7,71 +7,85 @@ $tituloPagina = 'Editar servicio';
 $rootPath = '../../';
 $erro = '';
 
-$id = isset ($_GET['id']) ? (int) $_GET['id'] : (isset($_POST['id']) ? (int) $_POST['id'] : 0);
-$servicoAtual = Servicio::buscarPorId($id);
+$id = isset($_GET['id']) ? (int) $_GET['id'] : (isset($_POST['id']) ? (int) $_POST['id'] : 0);
+$servicioActual = Servicio::buscarPorId($id);
 
-if($servicoAtual === nul || $servicoAtual === false){
-    http_response_code(405);
-    die('Serviço não encontrado.');
+if ($servicioActual === null) {
+    http_response_code(404);
+    die('Servicio no encontrado.');
 }
 
-//Essa parte aqui faz com que pegue os valores atuais
-$nomeAtual = is_array($servicoAtual) ? $servicoAtual['nombre'] : (method_exists($servicoAtual, 'getNombre') ? $servicoAtual->getNombre() : $servicoAtual->nombre ?? '');
-$descricaoAtual = is_array($servicoAtual) ? $servicoAtual['descripcion'] : (method_exists($servicoAtual, 'getDescripcion') ? $servicoAtual->getDescripcion() : $servicoAtual->descripcion ?? '');
-$precoAtual = is_array($servicoAtual) ? $servicoAtual['precio'] : (method_exists($servicoAtual, 'getPrecio') ? $servicoAtual->getPrecio() : $servicoAtual->precio ?? '');
+$categorias = Servicio::listarCategorias();
+$estadosValidos = ['activo' => 'Disponible', 'mantenimiento' => 'En mantenimiento', 'cerrado' => 'Cerrado'];
 
-if($_SERVER['REQUEST_METHOD'] === 'POST'){
+$nombre = $servicioActual['nombre'];
+$descripcion = $servicioActual['descripcion'] ?? '';
+$categoriaId = $servicioActual['categoria_id'];
+$estado = $servicioActual['estado'];
+$motivo = $servicioActual['motivo'] ?? '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nombre = trim($_POST['nombre'] ?? '');
     $descripcion = trim($_POST['descripcion'] ?? '');
-    $precio = (float)($_POST['precio'] ?? 0);
+    $categoriaId = $_POST['categoria_id'] !== '' ? (int) $_POST['categoria_id'] : null;
+    $estado = $_POST['estado'] ?? 'activo';
+    $motivo = trim($_POST['motivo'] ?? '');
 
-    if($nombre === ''){
-        $erro = 'O nome do serviço é obrigatório.';
-    } elseif($precio <= 0){
-        $erro = 'Adicione um preço válido.';
+    if ($nombre === '') {
+        $erro = 'El nombre del servicio es obligatorio.';
+    } elseif (!array_key_exists($estado, $estadosValidos)) {
+        $erro = 'Estado inválido.';
     } else {
-        $servicio = new Servicio($id, $nombre, $descripcion, $precio);
-
-        $sucesso = method_exists($servicio, 'actualizar') ? $servicio->actualizar() : (method_exists($servicio, 'guardar') ? $servicio->guardar() : false);
-
-        if($sucesso){
+        $servicio = new Servicio($id, $nombre, $descripcion !== '' ? $descripcion : null, $categoriaId, $estado, $motivo !== '' ? $motivo : null, $usuarioActual->getId());
+        if ($servicio->actualizar()) {
             header('Location: listar.php');
             exit;
-        } else {
-            $erro = 'Não foi possível salvar a alteração. Tente novamente.';
         }
+        $erro = 'No se pudieron guardar los cambios. Intentá de nuevo.';
     }
-
-    $nomeAtual = $nombre;
-    $descricaoAtual = $descripcion;
-    $precoAtual = $precio;
 }
 
-require __DIR__ . '../../includes/header.php';
+require __DIR__ . '/../../includes/header.php';
 ?>
 
 <section class="seccion seccion--angosta">
     <h1>Editar servicio</h1>
-    
-    <?php if ($erro != '') : ?>
+
+    <?php if ($erro !== ''): ?>
         <p class="alerta alerta--error"><?= htmlspecialchars($erro) ?></p>
     <?php endif; ?>
 
-<form method="post" class="formulario">
+    <form method="post" class="formulario">
+        <input type="hidden" name="id" value="<?= (int) $id ?>">
 
-    <input type="hidden" name="id" value="<?= (int) $id ?>">
+        <label for="nombre">Nombre del servicio</label>
+        <input type="text" id="nombre" name="nombre" required value="<?= htmlspecialchars($nombre) ?>">
 
-    <label for="nombre">Nome do serviço</label>
-    <input type="text" id="nombre" name="nombre" required value="<?= htmlspecialchars($nomeAtual) ?>">
+        <label for="descripcion">Descripción</label>
+        <textarea id="descripcion" name="descripcion" rows="4"><?= htmlspecialchars($descripcion) ?></textarea>
 
-    <label for="descripcion"></label>
-    <textarea id="descripcion" name="descripcion" rows="4"><?= htmlspecialchars($descricaoAtual) ?></textarea>
+        <label for="categoria_id">Categoría</label>
+        <select id="categoria_id" name="categoria_id">
+            <option value="">Sin categoría</option>
+            <?php foreach ($categorias as $cat): ?>
+                <option value="<?= (int) $cat['id'] ?>" <?= $categoriaId === (int) $cat['id'] ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($cat['nombre']) ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
 
-    <label for="precio">Preço</label>
-    <input type="precio" id="precio" name="precio" step="0.01" min="0" required value="<?= htmlspecialchars($precoAtual) ?>">
+        <label for="estado">Estado</label>
+        <select id="estado" name="estado">
+            <?php foreach ($estadosValidos as $valor => $texto): ?>
+                <option value="<?= $valor ?>" <?= $estado === $valor ? 'selected' : '' ?>><?= $texto ?></option>
+            <?php endforeach; ?>
+        </select>
 
-    <button type="submit" class="btn">Salvar alterações</button>
-</form>
+        <label for="motivo">Motivo (si está en mantenimiento o cerrado)</label>
+        <input type="text" id="motivo" name="motivo" value="<?= htmlspecialchars($motivo) ?>">
+
+        <button type="submit" class="btn">Guardar cambios</button>
+    </form>
 </section>
 
 <?php require __DIR__ . '/../../includes/footer.php'; ?>

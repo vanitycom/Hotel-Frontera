@@ -9,7 +9,7 @@ $rootPath = '../../';
 $pdo = Conexion::getInstancia();
 $usuarios = $pdo->query('SELECT idUsuario AS id, nome AS nombre, email, tipoDeUsuario AS rol FROM usuarios ORDER BY nome ASC')->fetchAll();
 
-foreach ($usuarios as $pessoas){
+foreach ($usuarios as &$pessoas){
     $pessoas['rol'] = Usuario::rolDesdeBd($pessoas['rol']);
 }
 unset($pessoas);

@@ -2,11 +2,11 @@
 require_once __DIR__ .  '/../../includes/auth.php';
 require_once __DIR__ . '/../../classes/Servicio.php';
 
-$usuarioActual = requerirPermiso('servicios:administrar');
+$usuarioActual = usuarioLogueado();
 $tituloPagina = 'Zonas y Servicios';
 $rootPath = '../../';
 
-$podeAdministrar = $usuarioActual->tienePermiso('servicios:administrar');
+$podeAdministrar = $usuarioActual !== null && $usuarioActual->tienePermiso('servicios:administrar');
 $servicios = Servicio::listarTodos();
 
 require __DIR__ . '/../../includes/header.php';
