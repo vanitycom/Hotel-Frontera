@@ -48,14 +48,15 @@ require __DIR__ . '/../../includes/header.php';
                 $puedeBorrar = ($esPropio && $usuarioActual->tienePermiso('foro:borrar_propio'))
                     || $usuarioActual->tienePermiso('foro:moderar_todo');
                 $puedeEditarOtro = $usuarioActual->tienePermiso('foro:moderar_todo') && !$esPropio;
+                $esFijado = !empty($c['fijado']);
                 $esEditado = !empty($c['editado']);
             ?>
-            <li class="comentario <?= $c['fijado'] ? 'comentario--fijado' : '' ?>">
+            <li class="comentario <?= $esFijado ? 'comentario--fijado' : '' ?>">
                 <div class="comentario__cabecera">
                     <strong><?= htmlspecialchars($c['autor_nombre']) ?></strong>
                     <span class="badge badge--rol"><?= htmlspecialchars($c['autor_rol']) ?></span>
                     <time><?= htmlspecialchars($c['fecha']) ?></time>
-                    <?php if ($c['editado']): ?><small>(editado)</small><?php endif; ?>
+                    <?php if ($esEditado): ?><small>(editado)</small><?php endif; ?>
                 </div>
                 <p class="comentario__contenido"><?= nl2br(htmlspecialchars($c['contenido'])) ?></p>
 

@@ -10,6 +10,7 @@ class Funcionario extends Usuario
 
     public function permisos(): array
     {
-        return ['servicios:crear', 'servicios:editar', 'servicios:borrar', 'foro:crear', 'foro:borrar_propio', 'foro:editar_propio'];
+        return ['servicios:administrar', 'servicios:crear', 'servicios:editar', 'servicios:borrar', 'foro:crear', 'foro:borrar_propio', 'foro:editar_propio'
+        ];
     }
 }
